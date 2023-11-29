@@ -42,6 +42,11 @@ class BlogUser
      */
     private $company;
 
+    /**
+     * @ORM\Column(type="string", length=2048, nullable=true)
+     */
+    private $image;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -103,6 +108,18 @@ class BlogUser
     public function setCompany(string $company): self
     {
         $this->company = $company;
+
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): self
+    {
+        $this->image = $image;
 
         return $this;
     }
