@@ -37,6 +37,12 @@ class BlogPost
      */
     private $createDate;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=BlogUser::class, inversedBy="blogPosts")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $createdBy;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -86,6 +92,18 @@ class BlogPost
     public function setCreateDate(\DateTimeInterface $createDate): self
     {
         $this->createDate = $createDate;
+
+        return $this;
+    }
+
+    public function getCreatedBy(): ?BlogUser
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?BlogUser $createdBy): self
+    {
+        $this->createdBy = $createdBy;
 
         return $this;
     }
