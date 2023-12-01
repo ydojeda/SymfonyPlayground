@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=BlogPostRepository::class)
  */
-class BlogPost
+class BlogPost implements \JsonSerializable
 {
     /**
      * @ORM\Id
@@ -106,5 +106,10 @@ class BlogPost
         $this->createdBy = $createdBy;
 
         return $this;
+    }
+
+    public function jsonSerialize()
+    {
+        return get_object_vars($this);
     }
 }
