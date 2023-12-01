@@ -12,12 +12,13 @@ class AppFixtures extends Fixture
 {
     /**
      * @throws \JsonException
+     * @throws \Exception
      */
     public function load(ObjectManager $manager): void
     {
         $json_data = file_get_contents(__DIR__ . '/testdata.json');
         $json_data = json_decode($json_data, true, 512, JSON_THROW_ON_ERROR);
-        $users= $json_data['users'];
+        $users = $json_data['users'];
         $posts = $json_data['posts'];
         /** @var $user_list BlogUser[] */
         $user_list = [];
@@ -34,6 +35,9 @@ class AppFixtures extends Fixture
             $manager->persist($user);
         }
 
+        $post_list = [];
+
+        # Blogpost object creation
         foreach ($posts as $data) {
             $post = new BlogPost();
             $tags = $data["tags"] ?? [];
@@ -44,16 +48,25 @@ class AppFixtures extends Fixture
 
             # Get a random date
             $dateToday = (new DateTime());
-            $dateMin = $dateToday->setTimestamp(0);
-            $createDate = (new DateTime())->setTimestamp(random_int($dateMin->getTimestamp(), $dateToday->getTimestamp()));
+            $randomTimestamp = random_int(0, $dateToday->getTimestamp());
+            $createDate = (new DateTime())->setTimestamp($randomTimestamp);
 
             $post->setCreateDate($createDate);
 
             # Get a random user
             $post->setCreatedBy($user_list[array_rand($user_list)]);
             $manager->persist($post);
-
         }
+
+        # sort posts by date then persist
+        usort($post_list, static function ($previous, $next) {
+            return $previous > $next;
+        });
+        foreach ($post_list as $post) {
+            $manager->persist($post);
+        }
+
         $manager->flush();
     }
+
 }
