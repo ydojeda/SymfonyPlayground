@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\DTO\BlogPostEnquiry;
 use App\DTO\BlogPostListEnquiry;
 use App\Entity\BlogPost;
 use App\Service\Serializer\DTOSerializer;
@@ -96,5 +97,47 @@ class BlogPostController extends AbstractController
             ['Content-Type' => 'application/json']
         );
     }
+
+    /**
+     * @Route("/blogposts/{userID}", name="blog-posts-update", methods={"PUT"})
+     * @throws NotSupported
+     * @throws \JsonException
+     *
+     */
+    public function updateBlogPost(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        DTOSerializer $serializer,
+        int $userID,
+    ):
+    Response {
+        /** @var BlogPostEnquiry $postEnquiry */
+        $postEnquiry = $serializer->deserialize(
+            $request->getContent(),
+            BlogPostEnquiry::class,
+            'json'
+        );
+        /** @var BlogPostRepository $blogPostRepository */
+        $post = $entityManager->getRepository(BlogPost::class)->find($userID);
+
+        if (!$post) {
+            throw $this->createNotFoundException(
+                'No post found for id ' . $userID
+            );
+        }
+
+        $post->setBody($postEnquiry->getBody());
+        // TODO why is it only persisting one field?
+        $post->setTags($postEnquiry->getTags());
+        $post->setReactions($postEnquiry->getReactions());
+        $entityManager->flush();
+
+        return new Response(
+            json_encode(["success" => true, "updatedID" => $userID], JSON_THROW_ON_ERROR),
+            200,
+            ['Content-Type' => 'application/json']
+        );
+    }
+
 
 }
