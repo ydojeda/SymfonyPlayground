@@ -47,6 +47,26 @@ class BlogPostRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @return BlogPost[] Returns an array of BlogPost objects
+     */
+    public function getBatchedBlogPosts(?int $limit = 50, int $offset = 0): array
+    {
+        $count = $this->createQueryBuilder('blogpost')
+            ->select('count(blogpost.id)')
+            ->getQuery()->getSingleScalarResult();
+
+        if ($count < ($limit + $offset)) {
+            $limit = max($count - $offset, 0);
+        }
+
+        return $this->createQueryBuilder('blogpost')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset)
+            ->getQuery()
+            ->execute();
+    }
+
     // /**
     //  * @return BlogPost[] Returns an array of BlogPost objects
     //  */

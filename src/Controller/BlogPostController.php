@@ -21,46 +21,37 @@ class BlogPostController extends AbstractController
 {
 
     /**
-     * @Route("/blogposts", name="blog-posts")
+     * @Route("/blogposts/{userID?}", name="blog-posts")
      * @throws NotSupported
      * @throws \JsonException
-     */
-    public function getBlogPosts(
-        Request $request,
-        EntityManagerInterface $entityManager,
-        DTOSerializer $serializer,
-    ):
-    Response {
-        /** @var BlogPostListEnquiry $enquiry */
-        $enquiry = $serializer->deserialize($request->getContent(), BlogPostListEnquiry::class, 'json');
-
-        /** @var BlogPostRepository $blogPostRepository */
-        $blogPostRepository = $entityManager->getRepository(BlogPost::class);
-        $posts = $blogPostRepository->findBy([], limit: $enquiry->getLimit(), offset: $enquiry->getOffset());
-        $posts_json = json_encode($posts, JSON_THROW_ON_ERROR);
-
-        return new Response($posts_json, 200, ['Content-Type' => 'application/json']);
-    }
-
-    /**
-     * @Route("/blogposts/{userID}", name="blog-posts")
-     * @throws NotSupported
-     * @throws \JsonException
+     *
+     * returns blogposts by userID or If userID null, all blogposts
      */
     public function getBlogPostsByUser(
         Request $request,
         EntityManagerInterface $entityManager,
         DTOSerializer $serializer,
-        int $userID,
+        ?int $userID = null,
     ):
     Response {
         /** @var BlogPostListEnquiry $enquiry */
-        $enquiry = $serializer->deserialize($request->getContent(), BlogPostListEnquiry::class, 'json');
+        $requestContent = $request->getContent();
+        $enquiry = empty($requestContent) ? new BlogPostListEnquiry() : $serializer->deserialize(
+            $request->getContent
+            (),
+            BlogPostListEnquiry::class,
+            'json'
+        );
         /** @var BlogPostRepository $blogPostRepository */
         $blogPostRepository = $entityManager->getRepository(BlogPost::class);
-        $posts = $blogPostRepository->findBy(['createdBy' => $userID],
+
+        $posts = $userID === null ? $blogPostRepository->getBatchedBlogPosts(
+            limit: $enquiry->getLimit(),
+            offset: $enquiry->getOffset()
+        ) : $blogPostRepository->findBy(['createdBy' => $userID],
             limit: $enquiry->getLimit(),
             offset: $enquiry->getOffset());
+
         $posts_json = json_encode($posts, JSON_THROW_ON_ERROR);
 
         return new Response($posts_json, 200, ['Content-Type' => 'application/json']);
