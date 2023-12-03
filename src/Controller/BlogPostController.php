@@ -58,30 +58,30 @@ class BlogPostController extends AbstractController
     }
 
     /**
-     * @Route("/blogposts/{userID}", name="blog-posts-delete", methods={"DELETE"})
+     * @Route("/blogposts/{blogID}", name="blog-posts-delete", methods={"DELETE"})
      * @throws NotSupported
      * @throws \JsonException
      *
      */
     public function removeBlogPost(
         EntityManagerInterface $entityManager,
-        int $userID,
+        int $blogID,
     ):
     Response {
 
         /** @var BlogPostRepository $blogPostRepository */
         $blogPostRepository = $entityManager->getRepository(BlogPost::class);
 
-        $post = $blogPostRepository->find($userID);
+        $post = $blogPostRepository->find($blogID);
 
         if (!$post) {
             throw $this->createNotFoundException(
-                'No post found for id' . $userID
+                'No post found for id' . $blogID
             );
         }
 
         try {
-            $blogPostRepository->removeById($userID);
+            $blogPostRepository->removeById($blogID);
         } catch (OptimisticLockException|ORMException $e) {
             return new Response(
                 json_encode(["success" => true, "msg" => $e->getMessage()], JSON_THROW_ON_ERROR),
@@ -92,7 +92,7 @@ class BlogPostController extends AbstractController
         }
 
         return new Response(
-            json_encode(["success" => true, "removedID" => $userID], JSON_THROW_ON_ERROR),
+            json_encode(["success" => true, "removedID" => $blogID], JSON_THROW_ON_ERROR),
             200,
             ['Content-Type' => 'application/json']
         );
