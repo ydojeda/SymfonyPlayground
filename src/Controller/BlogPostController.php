@@ -99,7 +99,7 @@ class BlogPostController extends AbstractController
     }
 
     /**
-     * @Route("/blogposts/{userID}", name="blog-posts-update", methods={"PUT"})
+     * @Route("/blogposts/{blogID}", name="blog-posts-update", methods={"PUT"})
      * @throws NotSupported
      * @throws \JsonException
      *
@@ -108,7 +108,7 @@ class BlogPostController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         DTOSerializer $serializer,
-        int $userID,
+        int $blogID,
     ):
     Response {
         /** @var BlogPostEnquiry $postEnquiry */
@@ -118,11 +118,11 @@ class BlogPostController extends AbstractController
             'json'
         );
         /** @var BlogPostRepository $blogPostRepository */
-        $post = $entityManager->getRepository(BlogPost::class)->find($userID);
+        $post = $entityManager->getRepository(BlogPost::class)->find($blogID);
 
         if (!$post) {
             throw $this->createNotFoundException(
-                'No post found for id ' . $userID
+                'No post found for id ' . $blogID
             );
         }
 
@@ -133,7 +133,7 @@ class BlogPostController extends AbstractController
         $entityManager->flush();
 
         return new Response(
-            json_encode(["success" => true, "updatedID" => $userID], JSON_THROW_ON_ERROR),
+            json_encode(["success" => true, "updatedID" => $blogID], JSON_THROW_ON_ERROR),
             200,
             ['Content-Type' => 'application/json']
         );
