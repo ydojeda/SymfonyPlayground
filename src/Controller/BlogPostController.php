@@ -5,9 +5,6 @@ namespace App\Controller;
 
 use App\DTO\BlogPostListEnquiry;
 use App\Entity\BlogPost;
-use App\Entity\BlogUser;
-use App\Repository\BlogUserRepository;
-use App\Service\BlogPostService;
 use App\Service\Serializer\DTOSerializer;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\NotSupported;
