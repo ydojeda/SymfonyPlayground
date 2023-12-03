@@ -37,8 +37,7 @@ class BlogPostController extends AbstractController
         $requestContent = $request->getContent();
 
         $enquiry = empty($requestContent) ? new BlogPostListEnquiry() : $serializer->deserialize(
-            $request->getContent
-            (),
+            $request->getContent(),
             BlogPostListEnquiry::class,
             'json'
         );
@@ -72,6 +71,14 @@ class BlogPostController extends AbstractController
         /** @var BlogPostRepository $blogPostRepository */
         $blogPostRepository = $entityManager->getRepository(BlogPost::class);
 
+        $post = $blogPostRepository->find($userID);
+
+        if (!$post) {
+            throw $this->createNotFoundException(
+                'No post found for id' . $userID
+            );
+        }
+
         try {
             $blogPostRepository->removeById($userID);
         } catch (OptimisticLockException|ORMException $e) {
@@ -82,7 +89,6 @@ class BlogPostController extends AbstractController
             );
 
         }
-
 
         return new Response(
             json_encode(["success" => true, "removedID" => $userID], JSON_THROW_ON_ERROR),
