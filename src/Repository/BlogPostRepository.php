@@ -48,6 +48,18 @@ class BlogPostRepository extends ServiceEntityRepository
     }
 
     /**
+     * @throws OptimisticLockException
+     * @throws ORMException
+     */
+    public function removeById(int $id, bool $flush = true): void
+    {
+        $blogPost = $this->find($id);
+        if ($blogPost) {
+            $this->remove($blogPost, $flush);
+        }
+    }
+
+    /**
      * @return BlogPost[] Returns an array of BlogPost objects
      */
     public function getBatchedBlogPosts(?int $limit = 50, int $offset = 0): array

@@ -11,6 +11,8 @@ use App\Service\BlogPostService;
 use App\Service\Serializer\DTOSerializer;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\NotSupported;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,13 +23,13 @@ class BlogPostController extends AbstractController
 {
 
     /**
-     * @Route("/blogposts/{userID?}", name="blog-posts")
+     * @Route("/blogposts/{userID?}", name="blog-posts", methods={"GET"})
      * @throws NotSupported
      * @throws \JsonException
      *
      * returns blogposts by userID or If userID null, all blogposts
      */
-    public function getBlogPostsByUser(
+    public function getBlogPosts(
         Request $request,
         EntityManagerInterface $entityManager,
         DTOSerializer $serializer,
@@ -36,6 +38,7 @@ class BlogPostController extends AbstractController
     Response {
         /** @var BlogPostListEnquiry $enquiry */
         $requestContent = $request->getContent();
+
         $enquiry = empty($requestContent) ? new BlogPostListEnquiry() : $serializer->deserialize(
             $request->getContent
             (),
@@ -55,6 +58,40 @@ class BlogPostController extends AbstractController
         $posts_json = json_encode($posts, JSON_THROW_ON_ERROR);
 
         return new Response($posts_json, 200, ['Content-Type' => 'application/json']);
+    }
+
+    /**
+     * @Route("/blogposts/{userID}", name="blog-posts-delete", methods={"DELETE"})
+     * @throws NotSupported
+     * @throws \JsonException
+     *
+     */
+    public function removeBlogPost(
+        EntityManagerInterface $entityManager,
+        int $userID,
+    ):
+    Response {
+
+        /** @var BlogPostRepository $blogPostRepository */
+        $blogPostRepository = $entityManager->getRepository(BlogPost::class);
+
+        try {
+            $blogPostRepository->removeById($userID);
+        } catch (OptimisticLockException|ORMException $e) {
+            return new Response(
+                json_encode(["success" => true, "msg" => $e->getMessage()], JSON_THROW_ON_ERROR),
+                200,
+                ['Content-Type' => 'application/json']
+            );
+
+        }
+
+
+        return new Response(
+            json_encode(["success" => true, "removedID" => $userID], JSON_THROW_ON_ERROR),
+            200,
+            ['Content-Type' => 'application/json']
+        );
     }
 
 }
