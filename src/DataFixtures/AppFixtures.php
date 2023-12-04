@@ -55,12 +55,13 @@ class AppFixtures extends Fixture
 
             # Get a random user
             $post->setCreatedBy($user_list[array_rand($user_list)]);
-            $manager->persist($post);
+            $post_list[] = $post;
+
         }
 
         # sort posts by date then persist
         usort($post_list, static function ($previous, $next) {
-            return $previous > $next;
+            return $previous->getCreateDate() > $next->getCreateDate();
         });
         foreach ($post_list as $post) {
             $manager->persist($post);
