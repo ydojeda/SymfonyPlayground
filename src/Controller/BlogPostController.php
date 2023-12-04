@@ -197,10 +197,9 @@ class BlogPostController extends AbstractController
             );
         }
 
-        $post->setBody($postEnquiry->getBody());
-        // TODO why is it only persisting one field?
-        $post->setTags($postEnquiry->getTags());
-        $post->setReactions($postEnquiry->getReactions());
+        $post->setBody($postEnquiry->getBody())
+            ->setTags($postEnquiry->getTags())
+            ->setReactions($postEnquiry->getReactions());
         $entityManager->flush();
 
         return new Response(
