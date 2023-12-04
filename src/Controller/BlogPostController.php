@@ -8,6 +8,7 @@ use App\DTO\BlogPostListEnquiry;
 use App\Entity\BlogPost;
 use App\Entity\BlogUser;
 use App\Repository\BlogUserRepository;
+use App\Service\BlogPostService;
 use App\Service\Serializer\DTOSerializer;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\NotSupported;
@@ -44,15 +45,14 @@ class BlogPostController extends AbstractController
         );
         /** @var BlogPostRepository $blogPostRepository */
         $blogPostRepository = $entityManager->getRepository(BlogPost::class);
+        $blogPostService = new BlogPostService($blogPostRepository);
 
-        $posts = $userID === null ? $blogPostRepository->getBatchedBlogPosts(
-            limit: $enquiry->getLimit(),
-            offset: $enquiry->getOffset()
-        ) : $blogPostRepository->findBy(['createdBy' => $userID],
-            limit: $enquiry->getLimit(),
-            offset: $enquiry->getOffset());
+        $posts = $blogPostService->getBlogPosts($userID, $enquiry->getLimit(), $enquiry->getOffset());
 
-        $posts_json = json_encode($posts, JSON_THROW_ON_ERROR);
+        $posts_json = json_encode(
+            array_map(array($blogPostService, 'getBlogPostReturnData'), $posts),
+            JSON_THROW_ON_ERROR
+        );
 
         return new Response($posts_json, 200, ['Content-Type' => 'application/json']);
     }
@@ -76,13 +76,14 @@ class BlogPostController extends AbstractController
             BlogPostEnquiry::class,
             'json'
         );
-        $postText = $postEnquiry->getBody();
-        $postTimestamp = $postEnquiry->getTimestamp();
-
 
         /** @var BlogUserRepository $blogPostRepository */
         $blogUserRepository = $entityManager->getRepository(BlogUser::class);
         $user = $blogUserRepository->find($userID);
+
+        /** @var BlogPostRepository $blogPostRepository */
+        $blogPostRepository = $entityManager->getRepository(BlogPost::class);
+        $blogPostService = new BlogPostService($blogPostRepository);
 
         if (!$user) {
             throw $this->createNotFoundException(
@@ -90,7 +91,7 @@ class BlogPostController extends AbstractController
             );
         }
 
-        if (empty($postText)) {
+        if (empty($postEnquiry->getBody())) {
             return new Response(
                 json_encode(["success" => false, "msg" => "Missing body text"], JSON_THROW_ON_ERROR),
                 400,
@@ -98,7 +99,7 @@ class BlogPostController extends AbstractController
             );
         }
 
-        if ($postTimestamp === null) {
+        if ($postEnquiry->getTimestamp() === null) {
             return new Response(
                 json_encode(["success" => false, "msg" => "Missing timestamp text"], JSON_THROW_ON_ERROR),
                 400,
@@ -106,12 +107,7 @@ class BlogPostController extends AbstractController
             );
         }
 
-        $post = (new BlogPost())
-            ->setCreateDate((new \DateTime())->setTimestamp($postTimestamp))
-            ->setCreatedBy($user)
-            ->setBody($postText)
-            ->setTags($postEnquiry->getTags() ?? '')
-            ->setReactions($postEnquiry->getReactions() ?? 0);
+        $post = $blogPostService->createBlogPostFromEnquiry($postEnquiry, $user);
 
 
         $entityManager->persist($post);
@@ -186,17 +182,18 @@ class BlogPostController extends AbstractController
             'json'
         );
         /** @var BlogPostRepository $blogPostRepository */
-        $post = $entityManager->getRepository(BlogPost::class)->find($blogID);
+        $blogPostRepository = $entityManager->getRepository(BlogPost::class);
+        $blogPostService = new BlogPostService($blogPostRepository);
 
-        if (!$post) {
+        $updatedPost = $blogPostService->updateBlogPostFromEnquiry($postEnquiry, $blogID);
+
+
+        if (!$updatedPost) {
             throw $this->createNotFoundException(
                 'No post found for id ' . $blogID
             );
         }
 
-        $post->setBody($postEnquiry->getBody())
-            ->setTags($postEnquiry->getTags())
-            ->setReactions($postEnquiry->getReactions());
         $entityManager->flush();
 
         return new Response(
