@@ -14,6 +14,18 @@ class BlogPostEnquiry
 
     private ?int $reactions = null;
 
+    private ?int $timestamp = null;
+
+    public function getTimestamp(): ?int
+    {
+        return $this->timestamp;
+    }
+
+    public function setTimestamp(?int $timestamp): void
+    {
+        $this->timestamp = $timestamp;
+    }
+
     public function getUserId(): ?int
     {
         return $this->userId;

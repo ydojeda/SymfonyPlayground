@@ -6,6 +6,8 @@ namespace App\Controller;
 use App\DTO\BlogPostEnquiry;
 use App\DTO\BlogPostListEnquiry;
 use App\Entity\BlogPost;
+use App\Entity\BlogUser;
+use App\Repository\BlogUserRepository;
 use App\Service\Serializer\DTOSerializer;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\NotSupported;
@@ -56,6 +58,75 @@ class BlogPostController extends AbstractController
 
         return new Response($posts_json, 200, ['Content-Type' => 'application/json']);
     }
+
+    /**
+     * @Route("/blogposts/{userID}/create", name="blog-posts-create", methods={"POST"})
+     * @throws NotSupported
+     * @throws \JsonException
+     *
+     */
+    public function createBlogPost(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        DTOSerializer $serializer,
+        int $userID,
+    ):
+    Response {
+        /** @var BlogPostEnquiry $postEnquiry */
+        $postEnquiry = $serializer->deserialize(
+            $request->getContent(),
+            BlogPostEnquiry::class,
+            'json'
+        );
+        $postText = $postEnquiry->getBody();
+        $postTimestamp = $postEnquiry->getTimestamp();
+
+
+        /** @var BlogUserRepository $blogPostRepository */
+        $blogUserRepository = $entityManager->getRepository(BlogUser::class);
+
+        $user = $blogUserRepository->find($userID);
+
+        if (!$user) {
+            throw $this->createNotFoundException(
+                'No user found for id' . $userID
+            );
+        }
+
+        if (empty($postText)) {
+            return new Response(
+                json_encode(["success" => false, "msg" => "Missing body text"], JSON_THROW_ON_ERROR),
+                400,
+                ['Content-Type' => 'application/json']
+            );
+        }
+
+        if ($postTimestamp === null) {
+            return new Response(
+                json_encode(["success" => false, "msg" => "Missing timestamp text"], JSON_THROW_ON_ERROR),
+                400,
+                ['Content-Type' => 'application/json']
+            );
+        }
+
+        $post = (new BlogPost())
+            ->setCreateDate((new \DateTime())->setTimestamp($postTimestamp))
+            ->setCreatedBy($user)
+            ->setBody($postText)
+            ->setTags($postEnquiry->getTags() ?? '')
+            ->setReactions($postEnquiry->getReactions() ?? 0);
+
+
+        $entityManager->persist($post);
+        $entityManager->flush();
+
+        return new Response(
+            json_encode(["success" => true], JSON_THROW_ON_ERROR),
+            200,
+            ['Content-Type' => 'application/json']
+        );
+    }
+
 
     /**
      * @Route("/blogposts/{blogID}", name="blog-posts-delete", methods={"DELETE"})
