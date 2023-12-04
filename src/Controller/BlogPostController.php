@@ -29,7 +29,7 @@ class BlogPostController extends AbstractController
      *
      * returns blogposts by userID or If userID null, all blogposts
      */
-    public function getBlogPosts(
+    public function getBlogPostList(
         Request $request,
         EntityManagerInterface $entityManager,
         DTOSerializer $serializer,
@@ -37,9 +37,7 @@ class BlogPostController extends AbstractController
     ):
     Response {
         /** @var BlogPostListEnquiry $enquiry */
-        $requestContent = $request->getContent();
-
-        $enquiry = empty($requestContent) ? new BlogPostListEnquiry() : $serializer->deserialize(
+        $enquiry = $serializer->deserialize(
             $request->getContent(),
             BlogPostListEnquiry::class,
             'json'
@@ -84,7 +82,6 @@ class BlogPostController extends AbstractController
 
         /** @var BlogUserRepository $blogPostRepository */
         $blogUserRepository = $entityManager->getRepository(BlogUser::class);
-
         $user = $blogUserRepository->find($userID);
 
         if (!$user) {
