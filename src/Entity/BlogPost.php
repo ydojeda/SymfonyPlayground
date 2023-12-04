@@ -70,7 +70,7 @@ class BlogPost implements \JsonSerializable
     public function setTags(?string $tags): self
     {
         if ($tags !== null) {
-            $this->$tags = $tags;
+            $this->tags = $tags;
         }
 
         return $this;
@@ -84,7 +84,7 @@ class BlogPost implements \JsonSerializable
     public function setReactions(?int $reactions): self
     {
         if ($reactions !== null) {
-            $this->$reactions = $reactions;
+            $this->reactions = $reactions;
         }
 
         return $this;
