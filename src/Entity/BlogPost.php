@@ -20,17 +20,17 @@ class BlogPost implements \JsonSerializable
     /**
      * @ORM\Column(type="text")
      */
-    private $body;
+    private $body = '';
 
     /**
      * @ORM\Column(type="text")
      */
-    private $tags;
+    private $tags = '';
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $reactions;
+    private $reactions = 0;
 
     /**
      * @ORM\Column(type="datetime")
@@ -90,7 +90,7 @@ class BlogPost implements \JsonSerializable
         return $this;
     }
 
-    public function getCreateDate(): ?\DateTimeInterface
+    public function getCreateDate(): \DateTimeInterface
     {
         return $this->createDate;
     }
@@ -102,7 +102,7 @@ class BlogPost implements \JsonSerializable
         return $this;
     }
 
-    public function getCreatedBy(): ?BlogUser
+    public function getCreatedBy(): BlogUser
     {
         return $this->createdBy;
     }
