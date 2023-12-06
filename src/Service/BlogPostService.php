@@ -55,8 +55,7 @@ class BlogPostService
             ->setCreatedBy($user)
             ->setBody($enquiry->getBody())
             ->setTags($enquiry->getTags() ?? '')
-            ->setReactions($enquiry->getReactions() ?? 0);
-
+            ->setReactions(0);
     }
 
     public function updateBlogPostFromEnquiry(BlogPostEnquiry $enquiry, int $id): ?BlogPost
