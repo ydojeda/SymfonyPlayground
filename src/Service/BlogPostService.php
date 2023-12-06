@@ -35,7 +35,7 @@ class BlogPostService
         return $userID === null ?
             $this->repository->getBatchedBlogPosts($limit, $offset)
             : $this->repository->findBy(
-                ['createdBy' => $userID],
+                ['user' => $userID],
                 limit: $limit,
                 offset: $offset
             );
