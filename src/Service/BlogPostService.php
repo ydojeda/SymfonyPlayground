@@ -4,11 +4,8 @@ namespace App\Service;
 
 use App\DTO\BlogPostEnquiry;
 use App\Entity\BlogPost;
-use App\Entity\BlogUser;
+use App\Entity\User;
 use App\Repository\BlogPostRepository;
-use DateTime;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
 
 class BlogPostService
 {
@@ -21,8 +18,8 @@ class BlogPostService
     {
         return [
             "id" => $blogPost->getId(),
-            "createDate" => $blogPost->getCreateDate()->getTimestamp(),
-            "userID" => $blogPost->getCreatedBy()->getId(),
+            "createDate" => $blogPost->getCreateDate(),
+            "userID" => $blogPost->getUser()->getId(),
             "body" => $blogPost->getBody(),
             "tags" => explode(',', $blogPost->getTags()),
             "reactions" => $blogPost->getReactions(),
@@ -48,11 +45,11 @@ class BlogPostService
     /**
      * @return BlogPost
      */
-    public function createBlogPostFromEnquiry(BlogPostEnquiry $enquiry, BlogUser $user): BlogPost
+    public function createBlogPostFromEnquiry(BlogPostEnquiry $enquiry, User $user): BlogPost
     {
         return (new BlogPost())
-            ->setCreateDate((new \DateTime())->setTimestamp($enquiry->getTimestamp()))
-            ->setCreatedBy($user)
+            ->setCreateDate($enquiry->getTimestamp())
+            ->setUser($user)
             ->setBody($enquiry->getBody())
             ->setTags($enquiry->getTags() ?? '')
             ->setReactions(0);

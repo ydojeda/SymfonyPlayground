@@ -3,7 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\BlogPost;
-use App\Entity\BlogUser;
+use App\Entity\User;
 use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -20,11 +20,11 @@ class AppFixtures extends Fixture
         $json_data = json_decode($json_data, true, 512, JSON_THROW_ON_ERROR);
         $users = $json_data['users'];
         $posts = $json_data['posts'];
-        /** @var $user_list BlogUser[] */
+        /** @var $user_list User[] */
         $user_list = [];
 
         foreach ($users as $data) {
-            $user = new BlogUser();
+            $user = new User();
             $user->setFirstName($data["firstName"]);
             $user->setLastName($data["lastName"]);
             $user->setAddress($data["address"]["state"]);
@@ -48,13 +48,12 @@ class AppFixtures extends Fixture
 
             # Get a random date
             $dateToday = (new DateTime());
-            $randomTimestamp = random_int(0, $dateToday->getTimestamp());
-            $createDate = (new DateTime())->setTimestamp($randomTimestamp);
+            $randomTimestamp = random_int(0, (new DateTime())->getTimestamp());
 
-            $post->setCreateDate($createDate);
+            $post->setCreateDate($randomTimestamp);
 
             # Get a random user
-            $post->setCreatedBy($user_list[array_rand($user_list)]);
+            $post->setUser($user_list[array_rand($user_list)]);
             $post_list[] = $post;
 
         }
