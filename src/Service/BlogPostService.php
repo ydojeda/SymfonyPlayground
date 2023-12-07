@@ -6,10 +6,11 @@ use App\DTO\BlogPostEnquiry;
 use App\Entity\BlogPost;
 use App\Entity\User;
 use App\Repository\BlogPostRepository;
+use App\Repository\UserRepository;
 
 class BlogPostService
 {
-    public function __construct(private BlogPostRepository $repository)
+    public function __construct(private BlogPostRepository $blogPostRepository, private UserRepository $userRepository)
     {
     }
 
@@ -33,8 +34,8 @@ class BlogPostService
     public function getBlogPosts(int $userID = null, int $limit = 50, int $offset = 0): array
     {
         return $userID === null ?
-            $this->repository->getBatchedBlogPosts($limit, $offset)
-            : $this->repository->findBy(
+            $this->blogPostRepository->getBatchedBlogPosts($limit, $offset)
+            : $this->blogPostRepository->findBy(
                 ['user' => $userID],
                 limit: $limit,
                 offset: $offset
@@ -57,7 +58,7 @@ class BlogPostService
 
     public function updateBlogPostFromEnquiry(BlogPostEnquiry $enquiry, int $id): ?BlogPost
     {
-        $post = $this->repository->find($id);
+        $post = $this->blogPostRepository->find($id);
 
         return $post ? (
         $post->setBody($enquiry->getBody())
