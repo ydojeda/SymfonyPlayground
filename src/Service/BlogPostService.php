@@ -48,7 +48,7 @@ class BlogPostService
     public function createBlogPostFromEnquiry(BlogPostEnquiry $enquiry, User $user): BlogPost
     {
         return (new BlogPost())
-            ->setCreateDate($enquiry->getTimestamp())
+            ->setCreateDate((new \DateTime())->getTimestamp())
             ->setUser($user)
             ->setBody($enquiry->getBody())
             ->setTags($enquiry->getTags() ?? '')
