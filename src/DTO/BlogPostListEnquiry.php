@@ -4,30 +4,26 @@ namespace App\DTO;
 
 class BlogPostListEnquiry implements \JsonSerializable
 {
-    private ?int $userId;
 
     private ?int $limit = 50;
 
     private ?int $offset = 0;
-
-    public function getUserId(): ?int
-    {
-        return $this->userId;
-    }
-
-    public function setUserId(?int $userId): void
-    {
-        $this->userId = $userId;
-    }
 
     public function getLimit(): ?int
     {
         return $this->limit;
     }
 
-    public function setLimit(?int $limit): void
+    public function setLimit(?string $limit): self
     {
-        $this->limit = $limit;
+        if ($limit !== null) {
+            $validated_limit = filter_var($limit, FILTER_SANITIZE_NUMBER_INT);
+            if ($validated_limit) {
+                $this->limit = (int) $limit;
+            }
+        }
+
+        return $this;
     }
 
     public function getOffset(): ?int
@@ -35,9 +31,14 @@ class BlogPostListEnquiry implements \JsonSerializable
         return $this->offset;
     }
 
-    public function setOffset(?int $offset): void
+    public function setOffset(?string $offset): self
     {
-        $this->offset = $offset;
+        if ($offset !== null) {
+            $validated_limit = filter_var($offset, FILTER_SANITIZE_NUMBER_INT);
+            $this->offset = (int) $offset;
+        }
+
+        return $this;
     }
 
 

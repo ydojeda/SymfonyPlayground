@@ -33,16 +33,14 @@ class BlogPostController extends AbstractController
     public function getBlogPostList(
         Request $request,
         EntityManagerInterface $entityManager,
-        DTOSerializer $serializer,
+        // Usually stored in a session
         ?int $userID = null,
     ):
     Response {
-        /** @var BlogPostListEnquiry $enquiry */
-        $enquiry = $serializer->deserialize(
-            $request->getContent(),
-            BlogPostListEnquiry::class,
-            'json'
-        );
+        $enquiry = (new BlogPostListEnquiry())
+            ->setLimit($request->get('limit'))
+            ->setOffset($request->get('offset'));
+
         /** @var BlogPostRepository $blogPostRepository */
         $blogPostRepository = $entityManager->getRepository(BlogPost::class);
         $blogPostService = new BlogPostService($blogPostRepository);
