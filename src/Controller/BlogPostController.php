@@ -22,6 +22,12 @@ use App\Repository\BlogPostRepository;
 
 class BlogPostController extends AbstractController
 {
+    private BlogPostService $blogPostService;
+
+    public function __construct(BlogPostService $blogPostService)
+    {
+        $this->blogPostService = $blogPostService;
+    }
 
     /**
      * @Route("/blogposts/{userID?}", name="blog-posts", methods={"GET"})
@@ -32,8 +38,6 @@ class BlogPostController extends AbstractController
      */
     public function getBlogPostList(
         Request $request,
-        EntityManagerInterface $entityManager,
-        // Usually stored in a session
         ?int $userID = null,
     ):
     Response {
@@ -42,13 +46,11 @@ class BlogPostController extends AbstractController
             ->setOffset($request->get('offset'));
 
         /** @var BlogPostRepository $blogPostRepository */
-        $blogPostRepository = $entityManager->getRepository(BlogPost::class);
-        $blogPostService = new BlogPostService($blogPostRepository);
 
-        $posts = $blogPostService->getBlogPosts($userID, $enquiry->getLimit(), $enquiry->getOffset());
+        $posts = $this->blogPostService->getBlogPosts($userID, $enquiry->getLimit(), $enquiry->getOffset());
 
         $posts_json = json_encode(
-            array_map(array($blogPostService, 'getBlogPostReturnData'), $posts),
+            array_map(array($this->blogPostService, 'getBlogPostReturnData'), $posts),
             JSON_THROW_ON_ERROR
         );
 
@@ -56,7 +58,7 @@ class BlogPostController extends AbstractController
     }
 
     /**
-     * @Route("/blogposts/{userID}/create", name="blog-posts-create", methods={"POST"})
+     * @Route("/blogposts/create", name="blog-posts-create", methods={"POST"})
      * @throws NotSupported
      * @throws \JsonException
      *

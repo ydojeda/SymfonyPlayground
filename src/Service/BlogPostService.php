@@ -7,11 +7,23 @@ use App\Entity\BlogPost;
 use App\Entity\User;
 use App\Repository\BlogPostRepository;
 use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 
 class BlogPostService
 {
-    public function __construct(private BlogPostRepository $blogPostRepository, private UserRepository $userRepository)
+    private BlogPostRepository $blogPostRepository;
+
+    private UserRepository $userRepository;
+
+    public function __construct(EntityManagerInterface $entityManager)
     {
+        /** @var BlogPostRepository $blogPostRepository */
+        $blogPostRepository = $entityManager->getRepository(BlogPost::class);
+        /** @var UserRepository $userRepository */
+        $userRepository = $entityManager->getRepository(User::class);
+
+        $this->blogPostRepository = $blogPostRepository;
+        $this->userRepository = $userRepository;
     }
 
 
