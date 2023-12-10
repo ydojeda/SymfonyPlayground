@@ -23,19 +23,16 @@ use App\Repository\BlogPostRepository;
 
 class BlogPostController extends AbstractController
 {
-    private BlogPostService $blogPostService;
-    private DTOSerializer $serializer;
 
-    public function __construct(BlogPostService $blogPostService, DTOSerializer $serializer)
+    public function __construct(private BlogPostService $blogPostService, private DTOSerializer $serializer)
     {
-        $this->blogPostService = $blogPostService;
-        $this->serializer = $serializer;
     }
 
     /**
      * @Route("/blogposts/{userID?}", name="blog-posts", methods={"GET"})
      * @throws NotSupported
      * @throws \JsonException
+     *
      *
      * returns blogposts by userID or If userID null, all blogposts
      */
