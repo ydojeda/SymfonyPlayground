@@ -62,15 +62,11 @@ class BlogPostController extends AbstractController
 
     /**
      * @Route("/blogposts/create", name="blog-posts-create", methods={"POST"})
-     * @throws NotSupported
      * @throws \JsonException
      *
      */
-    public function createBlogPost(
-        Request $request,
-        EntityManagerInterface $entityManager,
-    ):
-    Response {
+    public function createBlogPost(Request $request): Response
+    {
         /** @var BlogPostEnquiry $postEnquiry */
         $postEnquiry = $this->serializer->deserialize(
             $request->getContent(),
@@ -78,8 +74,8 @@ class BlogPostController extends AbstractController
             'json'
         );
         try {
-            $post = $this->blogPostService->createBlogPostFromEnquiry($postEnquiry);
-        } catch (\Exception $ex) {
+            $this->blogPostService->createBlogPostFromEnquiry($postEnquiry);
+        } catch (OptimisticLockException|ORMException|\Exception  $ex) {
             return new Response(
                 json_encode(
                     ['success' => false, "msg" => $ex->getMessage()],
@@ -90,9 +86,6 @@ class BlogPostController extends AbstractController
             );
 
         }
-
-        $entityManager->persist($post);
-        $entityManager->flush();
 
         return new Response(
             json_encode(["success" => true], JSON_THROW_ON_ERROR),

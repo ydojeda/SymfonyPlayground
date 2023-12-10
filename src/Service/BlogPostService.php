@@ -59,9 +59,10 @@ class BlogPostService
     }
 
     /**
-     * @return BlogPost
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    public function createBlogPostFromEnquiry(BlogPostEnquiry $enquiry): BlogPost
+    public function createBlogPostFromEnquiry(BlogPostEnquiry $enquiry): void
     {
         $user = $this->userRepository->find($enquiry->getUserId());
 
@@ -73,12 +74,14 @@ class BlogPostService
             throw new Exception('Failed to create post. Empty post content', 400);
         }
 
-        return (new BlogPost())
+        $newPost = (new BlogPost())
             ->setCreateDate((new \DateTime())->getTimestamp())
             ->setUser($user)
             ->setBody($enquiry->getBody())
             ->setTags($enquiry->getTags() ?? '')
             ->setReactions(0);
+
+        $this->blogPostRepository->add($newPost);
     }
 
     public function updateBlogPostFromEnquiry(BlogPostEnquiry $enquiry): ?BlogPost
