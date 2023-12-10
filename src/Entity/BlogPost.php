@@ -56,7 +56,7 @@ class BlogPost
     public function setBody(?string $body): self
     {
         if ($body !== null) {
-            $this->body = $body;
+            $this->body = filter_var($body, FILTER_SANITIZE_SPECIAL_CHARS);
         }
 
         return $this;
@@ -70,7 +70,7 @@ class BlogPost
     public function setTags(?string $tags): self
     {
         if ($tags !== null) {
-            $this->tags = $tags;
+            $this->tags = filter_var($tags, FILTER_SANITIZE_SPECIAL_CHARS);
         }
 
         return $this;
@@ -84,7 +84,7 @@ class BlogPost
     public function setReactions(?int $reactions): self
     {
         if ($reactions !== null) {
-            $this->reactions = $reactions;
+            $this->reactions = (int) filter_var($reactions, FILTER_SANITIZE_NUMBER_INT);
         }
 
         return $this;
