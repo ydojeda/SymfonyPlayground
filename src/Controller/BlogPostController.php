@@ -23,10 +23,12 @@ use App\Repository\BlogPostRepository;
 class BlogPostController extends AbstractController
 {
     private BlogPostService $blogPostService;
+    private DTOSerializer $serializer;
 
-    public function __construct(BlogPostService $blogPostService)
+    public function __construct(BlogPostService $blogPostService, DTOSerializer $serializer)
     {
         $this->blogPostService = $blogPostService;
+        $this->serializer = $serializer;
     }
 
     /**
