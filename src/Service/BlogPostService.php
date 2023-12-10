@@ -84,7 +84,7 @@ class BlogPostService
         $this->blogPostRepository->add($newPost);
     }
 
-    public function updateBlogPostFromEnquiry(BlogPostEnquiry $enquiry): ?BlogPost
+    public function updateBlogPostFromEnquiry(BlogPostEnquiry $enquiry): void
     {
         $post = $this->blogPostRepository->find($enquiry->getUserId());
 
@@ -92,7 +92,7 @@ class BlogPostService
             throw new Exception('Failed to update post', 400);
         }
 
-        return $post->setBody($enquiry->getBody())
+        $post->setBody($enquiry->getBody())
             ->setTags($enquiry->getTags())
             ->setReactions($enquiry->getReactions());
     }

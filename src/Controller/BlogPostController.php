@@ -39,11 +39,8 @@ class BlogPostController extends AbstractController
      *
      * returns blogposts by userID or If userID null, all blogposts
      */
-    public function getBlogPostList(
-        Request $request,
-        ?int $userID = null,
-    ):
-    Response {
+    public function getBlogPostList(Request $request, ?int $userID = null): Response
+    {
         $enquiry = (new BlogPostListEnquiry())
             ->setLimit($request->get('limit'))
             ->setOffset($request->get('offset'));
@@ -114,7 +111,7 @@ class BlogPostController extends AbstractController
         );
 
         try {
-            $updatedPost = $this->blogPostService->updateBlogPostFromEnquiry($postEnquiry);
+            $this->blogPostService->updateBlogPostFromEnquiry($postEnquiry);
         } catch (\Exception $ex) {
             return new Response(
                 json_encode(

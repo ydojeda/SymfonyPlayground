@@ -53,9 +53,11 @@ class BlogPost
         return $this->body;
     }
 
-    public function setBody(string $body): self
+    public function setBody(?string $body): self
     {
-        $this->body = $body;
+        if ($body !== null) {
+            $this->body = $body;
+        }
 
         return $this;
     }
@@ -67,7 +69,9 @@ class BlogPost
 
     public function setTags(?string $tags): self
     {
-        $this->tags = $tags;
+        if ($tags !== null) {
+            $this->tags = $tags;
+        }
 
         return $this;
     }
@@ -79,7 +83,9 @@ class BlogPost
 
     public function setReactions(?int $reactions): self
     {
-        $this->reactions = $reactions;
+        if ($reactions !== null) {
+            $this->reactions = $reactions;
+        }
 
         return $this;
     }
