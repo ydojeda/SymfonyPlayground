@@ -103,7 +103,7 @@ class BlogPostController extends AbstractController
 
 
     /**
-     * @Route("/blogposts/{blogID}", name="blog-posts-update", methods={"PUT"})
+     * @Route("/blogposts", name="blog-posts-update", methods={"PUT"})
      * @throws NotSupported
      * @throws \JsonException
      *
@@ -111,33 +111,32 @@ class BlogPostController extends AbstractController
     public function updateBlogPost(
         Request $request,
         EntityManagerInterface $entityManager,
-        DTOSerializer $serializer,
-        int $blogID,
     ):
     Response {
         /** @var BlogPostEnquiry $postEnquiry */
-        $postEnquiry = $serializer->deserialize(
+        $postEnquiry = $this->serializer->deserialize(
             $request->getContent(),
             BlogPostEnquiry::class,
             'json'
         );
-        /** @var BlogPostRepository $blogPostRepository */
-        $blogPostRepository = $entityManager->getRepository(BlogPost::class);
-        $blogPostService = new BlogPostService($blogPostRepository);
 
-        $updatedPost = $blogPostService->updateBlogPostFromEnquiry($postEnquiry, $blogID);
-
-
-        if (!$updatedPost) {
-            throw $this->createNotFoundException(
-                'No post found for id ' . $blogID
+        try {
+            $updatedPost = $this->blogPostService->updateBlogPostFromEnquiry($postEnquiry);
+        } catch (\Exception $ex) {
+            return new Response(
+                json_encode(
+                    ['success' => false, "msg" => $ex->getMessage()],
+                    JSON_THROW_ON_ERROR
+                ),
+                $ex->getCode(),
+                ['Content-Type' => 'application/json']
             );
         }
 
         $entityManager->flush();
 
         return new Response(
-            json_encode(["success" => true, "updatedID" => $blogID], JSON_THROW_ON_ERROR),
+            json_encode(["success" => true], JSON_THROW_ON_ERROR),
             200,
             ['Content-Type' => 'application/json']
         );
