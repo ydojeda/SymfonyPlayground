@@ -112,7 +112,7 @@ class BlogPostController extends AbstractController
 
         try {
             $this->blogPostService->updateBlogPostFromEnquiry($postEnquiry);
-        } catch (\Exception $ex) {
+        } catch (OptimisticLockException|ORMException|\Exception $ex) {
             return new Response(
                 json_encode(
                     ['success' => false, "msg" => $ex->getMessage()],

@@ -84,6 +84,10 @@ class BlogPostService
         $this->blogPostRepository->add($newPost);
     }
 
+    /**
+     * @throws OptimisticLockException
+     * @throws ORMException
+     */
     public function updateBlogPostFromEnquiry(BlogPostEnquiry $enquiry): void
     {
         $post = $this->blogPostRepository->find($enquiry->getUserId());
@@ -95,6 +99,8 @@ class BlogPostService
         $post->setBody($enquiry->getBody())
             ->setTags($enquiry->getTags())
             ->setReactions($enquiry->getReactions());
+
+        $this->blogPostRepository->flush();
     }
 
     /**

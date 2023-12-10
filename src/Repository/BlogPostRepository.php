@@ -47,6 +47,16 @@ class BlogPostRepository extends ServiceEntityRepository
         }
     }
 
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function flush(): void
+    {
+        $this->_em->flush();
+    }
+
     public function getBatchedBlogPosts(?int $limit = 50, int $offset = 0): array
     {
         $count = $this->createQueryBuilder('blogpost')
