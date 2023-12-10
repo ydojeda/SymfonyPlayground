@@ -8,6 +8,8 @@ use App\Entity\User;
 use App\Repository\BlogPostRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Symfony\Component\Config\Definition\Exception\Exception;
 
 class BlogPostService
@@ -88,6 +90,23 @@ class BlogPostService
             ->setTags($enquiry->getTags())
             ->setReactions($enquiry->getReactions())
         ) : $post;
+    }
+
+    /**
+     * @throws OptimisticLockException
+     * @throws ORMException
+     */
+    public function deleteBlogPost(int $blogId): void
+    {
+        $post = $this->blogPostRepository->find($blogId);
+
+        if (!$post) {
+            throw new Exception('Failed to delete post', 400);
+        }
+
+        $this->blogPostRepository->remove($post);
+
+
     }
 
 
