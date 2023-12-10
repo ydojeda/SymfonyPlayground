@@ -15,6 +15,7 @@ use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -68,49 +69,27 @@ class BlogPostController extends AbstractController
     public function createBlogPost(
         Request $request,
         EntityManagerInterface $entityManager,
-        DTOSerializer $serializer,
-        int $userID,
     ):
     Response {
         /** @var BlogPostEnquiry $postEnquiry */
-        $postEnquiry = $serializer->deserialize(
+        $postEnquiry = $this->serializer->deserialize(
             $request->getContent(),
             BlogPostEnquiry::class,
             'json'
         );
-
-        /** @var UserRepository $blogPostRepository */
-        $blogUserRepository = $entityManager->getRepository(User::class);
-        $user = $blogUserRepository->find($userID);
-
-        /** @var BlogPostRepository $blogPostRepository */
-        $blogPostRepository = $entityManager->getRepository(BlogPost::class);
-        $blogPostService = new BlogPostService($blogPostRepository);
-
-        if (!$user) {
-            throw $this->createNotFoundException(
-                'No user found for id' . $userID
-            );
-        }
-
-        if (empty($postEnquiry->getBody())) {
+        try {
+            $post = $this->blogPostService->createBlogPostFromEnquiry($postEnquiry);
+        } catch (\Exception $ex) {
             return new Response(
-                json_encode(["success" => false, "msg" => "Missing body text"], JSON_THROW_ON_ERROR),
-                400,
+                json_encode(
+                    ['success' => false, "msg" => $ex->getMessage()],
+                    JSON_THROW_ON_ERROR
+                ),
+                $ex->getCode(),
                 ['Content-Type' => 'application/json']
             );
+
         }
-
-        if ($postEnquiry->getTimestamp() === null) {
-            return new Response(
-                json_encode(["success" => false, "msg" => "Missing timestamp text"], JSON_THROW_ON_ERROR),
-                400,
-                ['Content-Type' => 'application/json']
-            );
-        }
-
-        $post = $blogPostService->createBlogPostFromEnquiry($postEnquiry, $user);
-
 
         $entityManager->persist($post);
         $entityManager->flush();
