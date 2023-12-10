@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Repository\BlogPostRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Config\Definition\Exception\Exception;
 
 class BlogPostService
 {
@@ -58,8 +59,18 @@ class BlogPostService
     /**
      * @return BlogPost
      */
-    public function createBlogPostFromEnquiry(BlogPostEnquiry $enquiry, User $user): BlogPost
+    public function createBlogPostFromEnquiry(BlogPostEnquiry $enquiry): BlogPost
     {
+        $user = $this->userRepository->find($enquiry->getUserId());
+
+        if (!$user) {
+            throw new Exception('Failed to create post for user', 400);
+        }
+
+        if (empty($enquiry->getBody())) {
+            throw new Exception('Failed to create post. Empty post content', 400);
+        }
+
         return (new BlogPost())
             ->setCreateDate((new \DateTime())->getTimestamp())
             ->setUser($user)
