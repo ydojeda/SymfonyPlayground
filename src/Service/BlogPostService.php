@@ -81,15 +81,17 @@ class BlogPostService
             ->setReactions(0);
     }
 
-    public function updateBlogPostFromEnquiry(BlogPostEnquiry $enquiry, int $id): ?BlogPost
+    public function updateBlogPostFromEnquiry(BlogPostEnquiry $enquiry): ?BlogPost
     {
-        $post = $this->blogPostRepository->find($id);
+        $post = $this->blogPostRepository->find($enquiry->getUserId());
 
-        return $post ? (
-        $post->setBody($enquiry->getBody())
+        if (!$post) {
+            throw new Exception('Failed to update post', 400);
+        }
+
+        return $post->setBody($enquiry->getBody())
             ->setTags($enquiry->getTags())
-            ->setReactions($enquiry->getReactions())
-        ) : $post;
+            ->setReactions($enquiry->getReactions());
     }
 
     /**
