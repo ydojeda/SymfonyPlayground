@@ -103,47 +103,6 @@ class BlogPostController extends AbstractController
 
 
     /**
-     * @Route("/blogposts/{blogID}", name="blog-posts-delete", methods={"DELETE"})
-     * @throws NotSupported
-     * @throws \JsonException
-     *
-     */
-    public function removeBlogPost(
-        EntityManagerInterface $entityManager,
-        int $blogID,
-    ):
-    Response {
-
-        /** @var BlogPostRepository $blogPostRepository */
-        $blogPostRepository = $entityManager->getRepository(BlogPost::class);
-
-        $post = $blogPostRepository->find($blogID);
-
-        if (!$post) {
-            throw $this->createNotFoundException(
-                'No post found for id' . $blogID
-            );
-        }
-
-        try {
-            $blogPostRepository->remove($post);
-        } catch (OptimisticLockException|ORMException $e) {
-            return new Response(
-                json_encode(["success" => true, "msg" => $e->getMessage()], JSON_THROW_ON_ERROR),
-                200,
-                ['Content-Type' => 'application/json']
-            );
-
-        }
-
-        return new Response(
-            json_encode(["success" => true, "removedID" => $blogID], JSON_THROW_ON_ERROR),
-            200,
-            ['Content-Type' => 'application/json']
-        );
-    }
-
-    /**
      * @Route("/blogposts/{blogID}", name="blog-posts-update", methods={"PUT"})
      * @throws NotSupported
      * @throws \JsonException
@@ -179,6 +138,33 @@ class BlogPostController extends AbstractController
 
         return new Response(
             json_encode(["success" => true, "updatedID" => $blogID], JSON_THROW_ON_ERROR),
+            200,
+            ['Content-Type' => 'application/json']
+        );
+    }
+
+    /**
+     * @Route("/blogposts/{blogID}", name="blog-posts-delete", methods={"DELETE"})
+     * @throws \JsonException
+     */
+    public function removeBlogPost(
+        int $blogID,
+    ):
+    Response {
+
+        try {
+            $this->blogPostService->deleteBlogPost($blogID);
+        } catch (OptimisticLockException|ORMException|\Exception $e) {
+            return new Response(
+                json_encode(["success" => true, "msg" => $e->getMessage()], JSON_THROW_ON_ERROR),
+                200,
+                ['Content-Type' => 'application/json']
+            );
+
+        }
+
+        return new Response(
+            json_encode(["success" => true, "removedID" => $blogID], JSON_THROW_ON_ERROR),
             200,
             ['Content-Type' => 'application/json']
         );
