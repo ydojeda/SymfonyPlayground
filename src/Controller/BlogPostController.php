@@ -5,17 +5,12 @@ namespace App\Controller;
 
 use App\DTO\BlogPostEnquiry;
 use App\DTO\BlogPostListEnquiry;
-use App\Entity\BlogPost;
-use App\Entity\User;
-use App\Repository\UserRepository;
 use App\Service\BlogPostService;
 use App\Service\Serializer\DTOSerializer;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Config\Definition\Exception\Exception;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -30,10 +25,6 @@ class BlogPostController extends AbstractController
 
     /**
      * @Route("/blogposts/{userID?}", name="blog-posts", methods={"GET"})
-     * @throws NotSupported
-     * @throws \JsonException
-     *
-     *
      * returns blogposts by userID or If userID null, all blogposts
      */
     public function getBlogPostList(Request $request, ?int $userID = null): Response
@@ -46,18 +37,16 @@ class BlogPostController extends AbstractController
 
         $posts = $this->blogPostService->getBlogPosts($userID, $enquiry->getLimit(), $enquiry->getOffset());
 
-        $posts_json = json_encode(
-            array_map(array($this->blogPostService, 'getBlogPostReturnData'), $posts),
-            JSON_THROW_ON_ERROR
-        );
 
-        return new Response($posts_json, 200, ['Content-Type' => 'application/json']);
+        return new JsonResponse(
+            array_map(array($this->blogPostService, 'getBlogPostReturnData'), $posts),
+            200,
+            ['Content-Type' => 'application/json']
+        );
     }
 
     /**
      * @Route("/blogposts/create", name="blog-posts-create", methods={"POST"})
-     * @throws \JsonException
-     *
      */
     public function createBlogPost(Request $request): Response
     {
@@ -70,19 +59,16 @@ class BlogPostController extends AbstractController
         try {
             $this->blogPostService->createBlogPostFromEnquiry($postEnquiry);
         } catch (OptimisticLockException|ORMException|\Exception  $ex) {
-            return new Response(
-                json_encode(
-                    ['success' => false, "msg" => $ex->getMessage()],
-                    JSON_THROW_ON_ERROR
-                ),
+            return new JsonResponse(
+                ['success' => false, "msg" => $ex->getMessage()],
                 $ex->getCode(),
                 ['Content-Type' => 'application/json']
             );
 
         }
 
-        return new Response(
-            json_encode(["success" => true], JSON_THROW_ON_ERROR),
+        return new JsonResponse(
+            ["success" => true],
             200,
             ['Content-Type' => 'application/json']
         );
@@ -91,14 +77,8 @@ class BlogPostController extends AbstractController
 
     /**
      * @Route("/blogposts", name="blog-posts-update", methods={"PUT"})
-     * @throws NotSupported
-     * @throws \JsonException
-     *
      */
-    public function updateBlogPost(
-        Request $request,
-        EntityManagerInterface $entityManager,
-    ):
+    public function updateBlogPost(Request $request):
     Response {
         /** @var BlogPostEnquiry $postEnquiry */
         $postEnquiry = $this->serializer->deserialize(
@@ -110,20 +90,16 @@ class BlogPostController extends AbstractController
         try {
             $this->blogPostService->updateBlogPostFromEnquiry($postEnquiry);
         } catch (OptimisticLockException|ORMException|\Exception $ex) {
-            return new Response(
-                json_encode(
-                    ['success' => false, "msg" => $ex->getMessage()],
-                    JSON_THROW_ON_ERROR
-                ),
+            return new JsonResponse(
+                ['success' => false, "msg" => $ex->getMessage()],
                 $ex->getCode(),
                 ['Content-Type' => 'application/json']
             );
         }
 
-        $entityManager->flush();
 
-        return new Response(
-            json_encode(["success" => true], JSON_THROW_ON_ERROR),
+        return new JsonResponse(
+            ["success" => true],
             200,
             ['Content-Type' => 'application/json']
         );
@@ -131,26 +107,23 @@ class BlogPostController extends AbstractController
 
     /**
      * @Route("/blogposts/{blogID}", name="blog-posts-delete", methods={"DELETE"})
-     * @throws \JsonException
      */
-    public function removeBlogPost(
-        int $blogID,
-    ):
+    public function removeBlogPost(int $blogID):
     Response {
 
         try {
             $this->blogPostService->deleteBlogPost($blogID);
         } catch (OptimisticLockException|ORMException|\Exception $e) {
-            return new Response(
-                json_encode(["success" => true, "msg" => $e->getMessage()], JSON_THROW_ON_ERROR),
+            return new JsonResponse(
+                ["success" => true, "msg" => $e->getMessage()],
                 200,
                 ['Content-Type' => 'application/json']
             );
 
         }
 
-        return new Response(
-            json_encode(["success" => true, "removedID" => $blogID], JSON_THROW_ON_ERROR),
+        return new JsonResponse(
+            ["success" => true, "removedID" => $blogID],
             200,
             ['Content-Type' => 'application/json']
         );
