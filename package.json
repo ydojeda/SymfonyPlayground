@@ -5,6 +5,7 @@
         "@symfony/stimulus-bridge": "^3.0.0",
         "@symfony/webpack-encore": "^1.7.0",
         "core-js": "^3.0.0",
+        "php_codesniffer": "squizlabs/php_codesniffer",
         "regenerator-runtime": "^0.13.2",
         "vue": "^3.3.9",
         "vue-loader": "^16.7.10",
